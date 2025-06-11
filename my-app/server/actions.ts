@@ -3,10 +3,10 @@
 import { db } from "@/server"
 import {todos} from './schema'
 import { revalidatePath } from "next/cache";
+import { eq } from "drizzle-orm";
 
 export const readData = async () => {
    const todos = await db.query.todos.findMany();
-  
 
    if(!todos){
     return {error:"No todos found."}
@@ -27,4 +27,16 @@ export const createData = async (formData:FormData) => {
    revalidatePath("/")
 
    return {success:"Todo created"}
+}
+
+export const deleteData = async (formData: FormData) => {
+   const id = Number(formData.get("id"))
+   if(!id){
+      return {error:"No id found"}
+   }
+   await db.delete(todos).where(eq(todos.id, id));
+   revalidatePath("/")
+
+   return {success:"Todo deleted"}
+
 }

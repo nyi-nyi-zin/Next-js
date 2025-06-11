@@ -1,5 +1,5 @@
 import CustomButton from "@/components/custom-button";
-import { createData, readData, } from "@/server/actions";
+import { createData, deleteData, readData, } from "@/server/actions";
 
 export const revalidate = 5;
 
@@ -17,7 +17,13 @@ export default async function Home() {
       <h1 className="text-xl font-bold ">Todos</h1>
      {
        success?.map(todo=>(
-        <p key={todo.id}>{todo.title}</p>
+        <div key={todo.id}>
+            <p>{todo.title}</p>
+            <form action={deleteData}>
+              <input type="text" name="id" value={todo.id} hidden />
+              <button type="submit" className="text-red-600 underline">Delete</button>
+            </form>
+        </div>
        ))
      }
      <div className="mt-2">
