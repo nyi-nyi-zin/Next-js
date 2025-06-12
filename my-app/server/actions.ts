@@ -1,55 +1,65 @@
-'use server'
+"use server";
 
-import { db } from "@/server"
-import {todos} from './schema'
+import { db } from ".";
+import { posts } from "./schema";
 import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 
-export const readData = async () => {
-   const todos = await db.query.todos.findMany();
+export const getPosts = async () => {
+  const posts = await db.query.posts.findMany();
 
-   if(!todos){
-    return {error:"No todos found."}
-   }
+  if (!posts) {
+    return { error: "No posts found." };
+  }
 
-   return {success:todos};
-}
+  return { success: posts };
+};
 
-export const createData = async (formData:FormData) => {
-   const todoTitle = formData.get("todoTitle")?.toString()
-   if(!todoTitle){
-      return {error:"No todo title found"}
-   }
+export const getPost = async (id: number) => {
+  const post = await db.query.posts.findFirst({
+    where: eq(posts.id, id),
+  });
+  if (!post) {
+    redirect("/");
+  }
+  return { success: post };
+};
 
-   await db.insert(todos).values({
-      title: todoTitle
-   })
-   revalidatePath("/")
+export const createData = async (formData: FormData) => {
+  const title = formData.get("title")?.toString();
+  const description = formData.get("description")?.toString();
+  if (!title || !description) {
+    return { error: "Invalid data format" };
+  }
 
-   return {success:"Todo created"}
-}
+  await db.insert(posts).values({ title, description });
+  revalidatePath("/");
+  redirect("/");
+};
 
 export const deleteData = async (formData: FormData) => {
-   const id = Number(formData.get("id"))
-   if(!id){
-      return {error:"No id found"}
-   }
-   await db.delete(todos).where(eq(todos.id, id));
-   revalidatePath("/")
+  const id = Number(formData.get("id"));
+  if (!id) {
+    return { error: "No id found" };
+  }
+  await db.delete(posts).where(eq(posts.id, id));
+  revalidatePath("/");
 
-   return {success:"Todo deleted"}
-}
+  redirect("/");
+};
 
-export const updateData = async (formData:FormData)=>{
-   const todoTitle = formData.get("title")?.toString();
-   const todoID = Number(formData.get("id"))
+export const updateData = async (formData: FormData) => {
+  const title = formData.get("title")?.toString();
+  const description = formData.get("description")?.toString();
+  const id = Number(formData.get("id"));
 
-   if(!todoTitle){
-      return {error:"No todo title found."}
-   }
+  if (!title || !description || !id) {
+    return { error: "No post found." };
+  }
 
-   await db.update(todos).set({title:todoTitle}).where(eq(todos.id,todoID))
-   revalidatePath("/")
-   redirect("/")
-}
+  await db.update(posts).set({ title, description }).where(eq(posts.id, id));
+  revalidatePath(`/post/${id}`);
+  revalidatePath("/");
+  redirect("/");
+};

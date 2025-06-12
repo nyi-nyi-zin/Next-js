@@ -1,11 +1,10 @@
-import CustomButton from "@/components/custom-button";
-import { createData, deleteData, readData, } from "@/server/actions";
-import Link from "next/link";
+import BlogCard from "@/components/blog-card";
+import {  getPosts, } from "@/server/actions";
 
 export const revalidate = 5;
 
 export default async function Home() {
-  const {error,success} = await readData();
+  const {error,success} = await getPosts();
  
   if(error){
     throw new Error(error)
@@ -14,25 +13,15 @@ export default async function Home() {
    console.log(success)
   
   return (
-    <main>
-      <h1 className="text-xl font-bold ">Todos</h1>
+    <main className="my-10">
+      <h1 className="title-text">Blogs</h1>
+      {success?.length === 0 && <p className="text-sm font-medium">No Posts To Show</p>}
      {
-       success?.map(todo=>(
-        <div key={todo.id}>
-            <p>{todo.title}</p>
-            <form action={deleteData}>
-              <input type="text" name="id" value={todo.id} hidden readOnly />
-              <button type="submit" className="text-red-600 underline">Delete</button>
-            </form>
-            <Link className="text-green-600" href={`/update/${todo.id}`} >Edit</Link>
-        </div>
+       success?.map(post=>(
+        <BlogCard title={post.title} id={post.id} key={post.id} description={post.description} />
        ))
      }
      <div className="mt-2">
-      <form action={createData}>
-        <input type="text" name="todoTitle" className="bg-transparent border border-black " />
-       <CustomButton label="Create"/>
-      </form>
      </div>
     </main>
   );

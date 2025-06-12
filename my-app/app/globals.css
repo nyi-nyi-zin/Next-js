@@ -2,3 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
+.title-text{
+   @apply text-xl font-bold text-blue-600;
+   }
